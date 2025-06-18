@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>🚀 Features</title>
+    <link rel="stylesheet" href="styles1.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(to bottom right, #f0f8ff, #ffffff);
+            color: #003366;
+        }
+
+        nav {
+            background-color: #003366;
+            padding: 1em;
+            text-align: center;
+        }
+
+        nav a {
+            color: white;
+            margin: 0 20px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        nav a:hover {
+            text-decoration: underline;
+        }
+
+        #features {
+            max-width: 1000px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.4em;
+            margin-bottom: 30px;
+        }
+
+        .feature-block {
+            margin-bottom: 25px;
+            padding: 15px 20px;
+            border-left: 6px solid #0099cc;
+            background-color: #e9f8ff;
+            border-radius: 6px;
+        }
+
+        .feature-block h2,
+        .feature-block h3,
+        .feature-block h4,
+        .feature-block h5,
+        .feature-block h6 {
+            margin-bottom: 10px;
+            color: #003366;
+        }
+
+        .feature-block li {
+            margin-left: 20px;
+            line-height: 1.7;
+        }
+
+        @media (max-width: 768px) {
+            #features {
+                margin: 20px;
+                padding: 20px;
+            }
+
+            nav a {
+                display: block;
+                margin: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+
+    <!-- Features Section -->
+    <section id="features">
+        <h1>🚀 Key Features of Railway Network Optimization System</h1>
+
+        <div class="feature-block">
+            <h2>🔍 Route Optimization</h2>
+            <ul>
+                <li>Find the shortest, cheapest and fastest route between stations.</li>
+                <li>Uses graph algorithms like Dijkstra, Bellman-Ford, Floyd-Warshall, Prim, Kruskal.</li>
+            </ul>
+        </div>
+
+        <div class="feature-block">
+            <h3>⏱️ Delay Prediction</h3>
+            <ul>
+                <li>Predicts delays based on traffic, schedules or real-time data.</li>
+                <li>Helps plan more accurate travel times.</li>
+            </ul>
+        </div>
+
+        <div class="feature-block">
+            <h4>🔁 Real-time Rerouting</h4>
+            <ul>
+                <li>Automatically suggests alternative routes in case of delays or disruptions.</li>
+            </ul>
+        </div>
+
+        <div class="feature-block">
+            <h5>🗺️ Interactive Network Map</h5>
+            <ul>
+                <li>Interactive map to select source/destination stations.</li>
+                <li>Visualization of routes, tracks and stations.</li>
+            </ul>
+        </div>
+
+        <div class="feature-block">
+            <h6>📉 Cost Optimization</h6>
+            <ul>
+                <li>Calculates and compares travel costs across different routes.</li>
+                <li>Includes distance, fuel/electricity usage etc.</li>
+            </ul>
+        </div>
+
+        <div class="feature-block">
+            <h6>🧠 Simulation Integration (AnyLogic)</h6>
+            <ul>
+                <li>Simulates train movement and traffic on routes.</li>
+                <li>Helps analyze network behavior before implementation.</li>
+            </ul>
+        </div>
+
+    </section>
+</body>
+</html>

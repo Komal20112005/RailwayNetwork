@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Optimization Tools</title>
+    <link rel="stylesheet" href="styles1.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f0f4f8;
+            margin: 0;
+            padding: 0;
+        }
+
+        nav {
+            background-color: #003366;
+            padding: 1em;
+            text-align: center;
+        }
+
+        nav a {
+            color: white;
+            margin: 0 15px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        nav a:hover {
+            text-decoration: underline;
+        }
+
+        .section-container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 30px;
+            background: #ffffff;
+            box-shadow: 0px 0px 12px rgba(0,0,0,0.1);
+            border-radius: 10px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #003366;
+        }
+
+        .form-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .form-group {
+            flex: 1 1 45%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group.full-width {
+            flex: 1 1 100%;
+            text-align: center;
+        }
+
+        label {
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        select, button {
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            background-color: #003366;
+            color: white;
+            cursor: pointer;
+            width: 50%;
+        }
+
+        button:hover {
+            background-color: #0055aa;
+        }
+
+        @media (max-width: 600px) {
+            .form-group {
+                flex: 1 1 100%;
+            }
+
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    
+    <!-- Optimization Form Section -->
+    <section id="optimization" class="section-container">
+        <h2>🚦 Optimization Tool</h2>
+        <div class="form-container">
+            <div class="form-group">
+                <label for="departure-station">Select Departure Station:</label>
+                <select id="departure-station">
+                    <option value="">-- Select --</option>
+                    <option value="station-1">Station 1</option>
+                    <option value="station-2">Station 2</option>
+                    <option value="station-3">Station 3</option>
+                    <option value="station-4">Station 4</option>
+                    <option value="station-5">Station 5</option>
+                    <option value="station-6">Station 6</option>
+                    <option value="station-7">Station 7</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="destination-station">Select Destination Station:</label>
+                <select id="destination-station">
+                    <option value="">-- Select --</option>
+                    <option value="station-1">Station 1</option>
+                    <option value="station-2">Station 2</option>
+                    <option value="station-3">Station 3</option>
+                    <option value="station-4">Station 4</option>
+                    <option value="station-5">Station 5</option>
+                    <option value="station-6">Station 6</option>
+                    <option value="station-7">Station 7</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="optimization-category">Optimization Category:</label>
+                <select id="optimization-category">
+                    <option value="">-- Select --</option>
+                    <option value="shortest-path">Find Shortest Path</option>
+                    <option value="minimize-delay">Predict Delay</option>
+                    <option value="cost-efficient">Reroute</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="train-type">Select Train Type:</label>
+                <select id="train-type">
+                    <option value="">-- Select --</option>
+                    <option value="express">Express</option>
+                    <option value="local">Local</option>
+                    <option value="freight">Freight</option>
+                    <option value="metro-train">Metro</option>
+                    <option value="sleepers">Sleepers</option>
+                </select>
+            </div>
+
+            <div class="form-group full-width">
+                <button onclick="optimizeRoutes()">Start Optimization</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- JavaScript -->
+    <script>
+        function optimizeRoutes() {
+            const departure = document.getElementById("departure-station").value;
+            const destination = document.getElementById("destination-station").value;
+            const category = document.getElementById("optimization-category").value;
+            const trainType = document.getElementById("train-type").value;
+
+            if (!departure || !destination || !category || !trainType) {
+                alert("⚠️ Please select all fields before optimizing.");
+                return;
+            }
+
+            if (departure === destination) {
+                alert("❌ Departure and destination stations cannot be the same.");
+                return;
+            }
+
+            // Future integration with backend logic or graph algorithm
+            alert(`✅ Optimization started for ${trainType} from ${departure} to ${destination} with category: ${category}`);
+        }
+
+    </script>
+<script src="script.js" defer></script>
+
+</body>
+</html>

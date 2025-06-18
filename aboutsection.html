@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>📌 About</title>
+    <link rel="stylesheet" href="styles1.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(to bottom right, #e6f2ff, #ffffff);
+            color: #003366;
+        }
+
+        nav {
+            background-color: #003366;
+            padding: 1em;
+            text-align: center;
+        }
+
+        nav a {
+            color: white;
+            margin: 0 20px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        nav a:hover {
+            text-decoration: underline;
+        }
+
+        #about {
+            max-width: 900px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+
+        h1, h2, h3, h4, h5 {
+            color: #003366;
+            margin-top: 25px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.4em;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        p {
+            line-height: 1.7;
+            font-size: 1.1em;
+            margin-top: 10px;
+        }
+
+        .highlight {
+            background-color: #e0f3ff;
+            padding: 8px;
+            border-left: 5px solid #0099cc;
+            margin-top: 20px;
+            border-radius: 5px;
+        }
+
+        @media (max-width: 768px) {
+            #about {
+                margin: 20px;
+                padding: 20px;
+            }
+
+            nav a {
+                display: block;
+                margin: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- About Section -->
+    <section id="about">
+        <h1>🚄 About Railway Network Optimization</h1>
+        <p>In modern times, half of the population prefers railways as a means of public travel. Thus, it becomes necessary to opt for railway network optimization as it leans toward a more sustainable approach by reducing harmful gas emissions, operational costs, and promoting a safer and more reliable journey for passengers.</p>
+
+        <div class="highlight">
+            <h2>🧩 About the Project</h2>
+            <p>The Railway Network Optimization System is designed to simplify and enhance rail transport and travel through optimization-based algorithms and user-friendly tools. It allows users to plan optimal routes, predict delays, and reduce overall travel costs.</p>
+        </div>
+
+        <h3>⚙️ Features</h3>
+        <ul>
+            <li>Smart route planning (shortest path, delay, cost)</li>
+            <li>Real-time network simulation</li>
+            <li>Interactive station selection</li>
+        </ul>
+
+        <h4>🧠 Technologies Used</h4>
+        <p>This system involves simulation through AnyLogic, graph optimization algorithms (Dijkstra, Bellman-Ford, Floyd-Warshall, Prim, Kruskal), and integration using HTML/CSS/JavaScript with backend support for advanced computations.</p>
+
+        <h5>🎯 Goal</h5>
+        <p>To efficiently optimize the railway network system by handling delays, reducing operational and energy costs, finding optimal paths, and delivering a seamless experience for both operators and passengers.</p>
+    </section>
+</body>
+</html>
