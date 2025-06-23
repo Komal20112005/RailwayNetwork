@@ -1,0 +1,203 @@
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Graph Algorithm Cost Comparison</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #552a76 15%, #1b3478 50%, #312f6a 100%);
+      padding: 2rem;
+      color: #111827;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 2rem;
+      color: #ffffff;
+      font-weight: 500;
+    }
+    canvas {
+      max-width: 800px;
+      margin: 2rem auto;
+      display: block;
+    }
+    .cost-output {
+      max-width: 800px;
+      margin: 0 auto;
+      font-size: 1rem;
+      padding: 1rem 1.5rem;
+      border-radius: 0.5rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      background: linear-gradient(135deg, #6d27a3 0%, #1b3478 15%, #6865cf 50%);
+    }
+    .cost-output div {
+      margin-bottom: 1rem;
+      line-height: 1.5;
+        color: #ffffff;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Cost Comparison of Graph Algorithms (All Pairs)</h1>
+  <div class="cost-output" id="costDisplay"></div>
+
+  <script>
+    const graph = {
+      nodes: [
+        { id: 'Mirzapur', x: 140, y: 120 },
+        { id: 'Dehradun', x: 700, y: 75 },
+        { id: 'Doiwala', x: 790, y: 250 },
+        { id: 'Rishikesh', x: 1050, y: 310 },
+        { id: 'Sharanpur', x: 50, y: 560 },
+        { id: 'Muzaffarabad', x: 380, y: 330 },
+        { id: 'Roorkee', x: 600, y: 720 },
+        { id: 'Haridwar', x: 940, y: 590 }
+      ],
+      edges: [
+        { source: 'Mirzapur', target: 'Muzaffarabad', weight: 4 },
+        { source: 'Mirzapur', target: 'Sharanpur', weight: 3 },
+        { source: 'Muzaffarabad', target: 'Doiwala', weight: -5 },
+        { source: 'Muzaffarabad', target: 'Roorkee', weight: 7 },
+        { source: 'Doiwala', target: 'Dehradun', weight: 6 },
+        { source: 'Doiwala', target: 'Haridwar', weight: 2 },
+        { source: 'Dehradun', target: 'Rishikesh', weight: 5 },
+        { source: 'Sharanpur', target: 'Roorkee', weight: 4 },
+        { source: 'Roorkee', target: 'Haridwar', weight: -3 },
+        { source: 'Haridwar', target: 'Rishikesh', weight: 3 }
+      ]
+    };
+
+    function buildAdjacencyList(graph) {
+      const adj = {};
+      graph.nodes.forEach(n => adj[n.id] = []);
+      graph.edges.forEach(e => {
+        adj[e.source].push({ node: e.target, weight: e.weight });
+      });
+      return adj;
+    }
+
+    function dijkstra(graph, start, end) {
+      const adj = buildAdjacencyList(graph);
+      const dist = {};
+      const visited = {};
+      graph.nodes.forEach(n => dist[n.id] = Infinity);
+      dist[start] = 0;
+
+      while (true) {
+        let minNode = null;
+        let minDist = Infinity;
+        for (const node in dist) {
+          if (!visited[node] && dist[node] < minDist) {
+            minDist = dist[node];
+            minNode = node;
+          }
+        }
+        if (!minNode) break;
+        visited[minNode] = true;
+        adj[minNode].forEach(neighbor => {
+          const alt = dist[minNode] + neighbor.weight;
+          if (alt < dist[neighbor.node]) dist[neighbor.node] = alt;
+        });
+      }
+      return dist[end];
+    }
+
+    function bellmanFord(graph, start, end) {
+      const dist = {};
+      graph.nodes.forEach(n => dist[n.id] = Infinity);
+      dist[start] = 0;
+
+      for (let i = 0; i < graph.nodes.length - 1; i++) {
+        graph.edges.forEach(e => {
+          if (dist[e.source] + e.weight < dist[e.target]) {
+            dist[e.target] = dist[e.source] + e.weight;
+          }
+        });
+      }
+      return dist[end];
+    }
+
+    function euclidean(a, b) {
+      const dx = a.x - b.x;
+      const dy = a.y - b.y;
+      return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    function aStar(graph, start, end) {
+      const open = new Set([start]);
+      const adj = buildAdjacencyList(graph);
+      const g = {};
+      const f = {};
+      graph.nodes.forEach(n => {
+        g[n.id] = Infinity;
+        f[n.id] = Infinity;
+      });
+      g[start] = 0;
+      const startNode = graph.nodes.find(n => n.id === start);
+      const endNode = graph.nodes.find(n => n.id === end);
+      f[start] = euclidean(startNode, endNode);
+
+      while (open.size > 0) {
+        let current = null;
+        let lowestF = Infinity;
+        open.forEach(node => {
+          if (f[node] < lowestF) {
+            lowestF = f[node];
+            current = node;
+          }
+        });
+        if (current === end) return g[end];
+        open.delete(current);
+        adj[current].forEach(neighbor => {
+          const tentativeG = g[current] + neighbor.weight;
+          if (tentativeG < g[neighbor.node]) {
+            g[neighbor.node] = tentativeG;
+            const h = euclidean(graph.nodes.find(n => n.id === neighbor.node), endNode);
+            f[neighbor.node] = g[neighbor.node] + h;
+            open.add(neighbor.node);
+          }
+        });
+      }
+      return g[end];
+    }
+
+    function bfs(graph, start, end) {
+      const adj = buildAdjacencyList(graph);
+      const queue = [{ node: start, dist: 0 }];
+      const visited = new Set();
+      while (queue.length) {
+        const { node, dist } = queue.shift();
+        if (node === end) return dist;
+        if (!visited.has(node)) {
+          visited.add(node);
+          adj[node].forEach(n => queue.push({ node: n.node, dist: dist + 1 }));
+        }
+      }
+      return Infinity;
+    }
+
+    const display = document.getElementById('costDisplay');
+    graph.nodes.forEach(source => {
+      graph.nodes.forEach(target => {
+        if (source.id !== target.id) {
+          const results = {
+            'Dijkstra': dijkstra(graph, source.id, target.id),
+            'Bellman-Ford': bellmanFord(graph, source.id, target.id),
+            'A*': aStar(graph, source.id, target.id),
+            'Floyd-Warshall': '—', // can be done separately for all pairs
+            'BFS (steps)': bfs(graph, source.id, target.id)
+          };
+
+          const block = document.createElement('div');
+          block.innerHTML = `<strong>${source.id} → ${target.id}</strong><br>` +
+            Object.entries(results).map(([algo, cost]) => `${algo}: ${cost}`).join('<br>');
+          block.style.marginBottom = '1.5rem';
+          display.appendChild(block);
+        }
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Railway Network Graph Algorithms</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <video class="video-bg" autoplay muted loop playsinline>
+  <source src="./railvideo.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+  </video>
+
+  <style>
+    .video-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    min-width: 100%;
+    min-height: 100%;
+    object-fit: cover;
+    z-index: -1; /* Send video behind all content */
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f9fafb;
+      color: #ffffff;
+      margin-left: 250px;
+    }
+    h1 {
+      color: #ffffff;
+      align-items: center;
+      margin-bottom: 15px;
+      margin-left :300px;
+    }
+    label {
+      margin-right: 20px;
+      font-weight: 600;
+      margin-left: 70px;
+    }
+    select, button {
+      margin-right: 15px;
+      padding: 6px 12px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      outline: none;
+      transition: border-color 0.2s ease;
+      cursor: pointer;
+    }
+    select:focus, button:focus {
+      border-color: #1e40af;
+      box-shadow: 0 0 5px rgba(30, 64, 175, 0.5);
+    }
+    button {
+      background-color: #1e40af;
+      color: white;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:disabled {
+      background-color: #999;
+      cursor: not-allowed;
+    }
+    button:hover:not(:disabled) {
+      background-color: #374abe;
+    }
+    p#cost {
+      font-weight: 700;
+      margin-top: 8px;
+      margin-bottom: 8px;
+      font-size: 20px;
+      color: #d97706; /* amber-600 */
+    }
+    svg {
+      background: #f4f4f4;
+      background-image: url("./map.png");
+      border: 1px solid #ccc;
+      display: block;
+      margin-top: 20px;
+      border-radius: 6px;
+      box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
+    }
+    circle.node {
+      fill: #2954e1;
+      cursor: pointer;
+      transition: fill 0.3s ease;
+    }
+    circle.node:hover {
+      fill: #3b82f6;
+    }
+    line.edge {
+      stroke: #555;
+      stroke-width: 2;
+      transition: stroke-width 0.3s ease, stroke 0.3s ease;
+    }
+    line.highlight {
+      stroke: orange;
+      stroke-width: 4;
+    }
+    text.label {
+      font-size: 12px;
+      user-select: none;
+      pointer-events: none;
+      font-weight: 600;
+      fill: #222;
+    }
+    .tooltip {
+      position: absolute;
+      background-color: #333;
+      color: #fff;
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      z-index: 10;
+    }
+    button#backBtn {
+      margin-top: 20px;
+      background-color: #555;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 5px;
+      color: white;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button#backBtn:hover {
+      background-color: #333;
+    }
+    .negative-train {
+      opacity: 1;
+      transition: opacity 0.5s ease;
+    }
+    
+  </style>
+</head>
+<body>
+  <h1>Railway Network Graph Algorithms</h1>
+  <label for="startNode">Start Node:</label>
+  <select id="startNode"></select>
+  <label for="endNode">End Node:</label>
+  <select id="endNode"></select>
+  <label for="algorithm">Algorithm:</label>
+  <select id="algorithm">
+    <option>Dijkstra</option>
+    <option>Bellman-Ford</option>
+    <option>Floyd-Warshall</option>
+    <option>Prim</option>
+    <option>Kruskal</option>
+  </select>
+  <button id="runBtn" disabled>Run</button>
+  <p id="cost"></p>
+
+  <svg width="1100" height="745"></svg>
+  <div class="tooltip" id="tooltip"></div>
+
+  <button id="backBtn">Go Back</button>
+
+  <script>
+    const svg = d3.select("svg");
+    const tooltip = d3.select("#tooltip");
+    const runBtn = document.getElementById("runBtn");
+    const startSelect = document.getElementById("startNode");
+    const endSelect = document.getElementById("endNode");
+    const algorithmSelect = document.getElementById("algorithm");
+    const costDisplay = document.getElementById("cost");
+    const backBtn = document.getElementById("backBtn");
+
+    const graph = {
+      nodes: [
+        { id: 'Mirzapur', x: 140, y: 120 },
+        { id: 'Dehradun', x: 700, y: 75 },
+        { id: 'Doiwala', x: 790, y: 250 },
+        { id: 'Rishikesh', x: 1050, y: 310 },
+        { id: 'Sharanpur', x: 50, y: 560 },
+        { id: 'Muzaffarabad', x: 380, y: 330 },
+        { id: 'Roorkee', x: 600, y: 720 },
+        { id: 'Haridwar', x: 940, y: 590 }
+      ],
+      edges: [
+        { source: 'Mirzapur', target: 'Muzaffarabad', weight: 4 },
+        { source: 'Mirzapur', target: 'Sharanpur', weight: 3 },
+        { source: 'Muzaffarabad', target: 'Doiwala', weight: -5 },
+        { source: 'Muzaffarabad', target: 'Roorkee', weight: 7 },
+        { source: 'Doiwala', target: 'Dehradun', weight: 6 },
+        { source: 'Doiwala', target: 'Haridwar', weight: 2 },
+        { source: 'Dehradun', target: 'Rishikesh', weight: 5 },
+        { source: 'Sharanpur', target: 'Roorkee', weight: 4 },
+        { source: 'Roorkee', target: 'Haridwar', weight: -3 },
+        { source: 'Haridwar', target: 'Rishikesh', weight: 3 }
+      ]
+    };
+
+    const nodeById = Object.fromEntries(graph.nodes.map(n => [n.id, n]));
+
+    function populateDropdowns() {
+      graph.nodes.forEach(n => {
+        const optionStart = document.createElement("option");
+        optionStart.value = n.id;
+        optionStart.textContent = n.id;
+        startSelect.appendChild(optionStart);
+
+        const optionEnd = document.createElement("option");
+        optionEnd.value = n.id;
+        optionEnd.textContent = n.id;
+        endSelect.appendChild(optionEnd);
+      });
+
+      startSelect.selectedIndex = 0;
+      endSelect.selectedIndex = 1;
+      validateSelection();
+    }
+
+    function validateSelection() {
+      if (startSelect.value && endSelect.value && startSelect.value !== endSelect.value) {
+        runBtn.disabled = false;
+      } else {
+        runBtn.disabled = true;
+        costDisplay.textContent = "";
+      }
+    }
+
+    startSelect.addEventListener("change", validateSelection);
+    endSelect.addEventListener("change", validateSelection);
+
+    function drawGraph(highlightedEdges = []) {
+      svg.selectAll(".negative-train").remove();
+      svg.selectAll(".link").remove();
+      svg.selectAll(".node").remove();
+      svg.selectAll(".label").remove();
+
+      const linkGroup = svg.append("g").attr("class", "edges");
+      linkGroup.selectAll("line")
+        .data(graph.edges)
+        .enter()
+        .append("line")
+        .attr("class", d => highlightedEdges.includes(d) ? "highlight edge" : "link")
+        .attr("x1", d => nodeById[d.source].x)
+        .attr("y1", d => nodeById[d.source].y)
+        .attr("x2", d => nodeById[d.target].x)
+        .attr("y2", d => nodeById[d.target].y)
+        .attr("stroke-width", 2)
+        .attr("stroke", d => d.weight < 0 ? "red" : "gray");
+
+      svg.selectAll(".label")
+        .data(graph.edges)
+        .enter()
+        .append("text")
+        .attr("class", "label")
+        .attr("x", d => (nodeById[d.source].x + nodeById[d.target].x) / 2)
+        .attr("y", d => (nodeById[d.source].y + nodeById[d.target].y) / 2)
+        .text(d => d.weight);
+
+      const nodeGroup = svg.append("g").attr("class", "nodes");
+      const nodeElements = nodeGroup.selectAll(".node")
+        .data(graph.nodes)
+        .enter()
+        .append("circle")
+        .attr("class", "node")
+        .attr("r", 15)
+        .attr("cx", n => n.x)
+        .attr("cy", n => n.y);
+
+      nodeElements.on("mouseover", (event, node) => {
+        tooltip.transition().duration(200).style("opacity", 1);
+        tooltip.html(`Node: ${node.id}`).style("left", `${event.pageX + 5}px`).style("top", `${event.pageY - 30}px`);
+      });
+
+      nodeElements.on("mouseout", () => {
+        tooltip.transition().duration(200).style("opacity", 0);
+      });
+
+      nodeGroup.selectAll(".label")
+        .data(graph.nodes)
+        .enter()
+        .append("text")
+        .attr("class", "label")
+        .attr("x", n => n.x)
+        .attr("y", n => n.y - 20)
+        .attr("text-anchor", "middle")
+        .text(n => n.id);
+    }
+
+  function dijkstra(start, end) {
+  const dist = {};
+  const prev = {};
+  const visited = new Set();
+  const pq = new PriorityQueue();
+
+  graph.nodes.forEach(n => {
+    dist[n.id] = Infinity;
+    prev[n.id] = null;
+  });
+
+  dist[start] = 0;
+  pq.enqueue(start, 0);
+
+  while (!pq.isEmpty()) {
+    const u = pq.dequeue().element;
+    if (u === end) break;
+    if (visited.has(u)) continue;
+    visited.add(u);
+
+    graph.edges
+      .filter(e => e.source === u) // Allow all edges (including negative) so we can handle logic manually
+      .forEach(edge => {
+        const v = edge.target;
+        const alt = dist[u] + edge.weight;
+        if (alt < dist[v]) {
+          dist[v] = alt;
+          prev[v] = u;
+          pq.enqueue(v, dist[v]);
+        }
+      });
+  }
+
+  // Build path from end to start using prev[]
+  let path = [];
+  let currentNode = end;
+  while (currentNode && prev[currentNode] !== null) {
+    path.unshift(currentNode);
+    currentNode = prev[currentNode];
+  }
+  if (currentNode === start) {
+    path.unshift(start);
+  } else {
+    costDisplay.textContent = "No valid path.";
+    drawGraph();
+    return;
+  }
+
+  // Detect first negative edge along the path
+  let negativeEdgeIndex = -1;
+  for (let i = 0; i < path.length - 1; i++) {
+    const edge = graph.edges.find(e => e.source === path[i] && e.target === path[i + 1]);
+    if (edge && edge.weight < 0) {
+      negativeEdgeIndex = i;
+      break;
+    }
+  }
+
+  drawGraph(path);
+
+  if (negativeEdgeIndex !== -1) {
+    costDisplay.textContent = "Negative edge encountered. Returning step-by-step...";
+    animateTrainReturn(path, negativeEdgeIndex);
+  } else {
+    costDisplay.textContent = `Cost: ${dist[end]}`;
+    animateTrain(path);
+  }
+}
+
+function animateTrainReturn(pathNodes, negativeEdgeIndex) {
+  if (pathNodes.length < 2 || negativeEdgeIndex < 0) return;
+
+  // Remove any existing train group first
+  svg.selectAll(".train-return").interrupt().remove();
+
+  const trainGroup = svg.append("g")
+    .attr("class", "train-return")
+    .attr("transform", `translate(${nodeById[pathNodes[0]].x}, ${nodeById[pathNodes[0]].y})`);
+
+  // Train body
+  trainGroup.append("rect")
+    .attr("x", -20).attr("y", -10).attr("width", 40).attr("height", 20)
+    .attr("rx", 10).attr("ry", 10)
+    .attr("fill", "#e0f2fe")
+    .attr("stroke", "#0f172a")
+    .attr("stroke-width", 1.5);
+
+  trainGroup.append("rect")
+    .attr("x", -14).attr("y", -6).attr("width", 28).attr("height", 5)
+    .attr("fill", "#1e3a8a");
+
+  for (let i = -10; i <= 10; i += 8) {
+    trainGroup.append("rect")
+      .attr("x", i).attr("y", -5).attr("width", 4).attr("height", 3)
+      .attr("fill", "#93c5fd");
+  }
+
+  trainGroup.append("path")
+    .attr("d", "M20,-10 Q30,0 20,10")
+    .attr("fill", "#60a5fa");
+
+  trainGroup.append("circle")
+    .attr("cx", -12).attr("cy", 11).attr("r", 3)
+    .attr("fill", "#0f172a");
+
+  trainGroup.append("circle")
+    .attr("cx", 12).attr("cy", 11).attr("r", 3)
+    .attr("fill", "#0f172a");
+
+  let i = 0;
+
+  // Move forward until the negative edge
+  function moveForward() {
+    if (i >= negativeEdgeIndex + 1) {
+      moveBackward(i);
+      return;
+    }
+    const from = nodeById[pathNodes[i]];
+    const to = nodeById[pathNodes[i + 1]];
+    trainGroup.transition()
+      .duration(1000)
+      .attr("transform", `translate(${to.x},${to.y})`)
+      .on("end", () => {
+        i++;
+        moveForward();
+      });
+  }
+
+  // Move backward step by step back to start
+  function moveBackward(j) {
+    if (j <= 0) return;
+    const from = nodeById[pathNodes[j]];
+    const to = nodeById[pathNodes[j - 1]];
+    trainGroup.transition()
+      .duration(1000)
+      .attr("transform", `translate(${to.x},${to.y})`)
+      .on("end", () => {
+        moveBackward(j - 1);
+      });
+  }
+
+  moveForward();
+}
+    function bellmanFord(start, end) {
+      const dist = {};
+      const prev = {};
+
+      graph.nodes.forEach(n => {
+        dist[n.id] = Infinity;
+        prev[n.id] = null;
+      });
+      dist[start] = 0;
+
+      for (let i = 0; i < graph.nodes.length - 1; i++) {
+        graph.edges.forEach(edge => {
+          const u = edge.source;
+          const v = edge.target;
+          const weight = edge.weight;
+          if (dist[u] !== Infinity && dist[u] + weight < dist[v]) {
+            dist[v] = dist[u] + weight;
+            prev[v] = u;
+          }
+        });
+      }
+
+      // Check for negative weight cycle
+      graph.edges.forEach(edge => {
+        const u = edge.source;
+        const v = edge.target;
+        const weight = edge.weight;
+        if (dist[u] !== Infinity && dist[u] + weight < dist[v]) {
+          console.error("Graph contains a negative weight cycle");
+        }
+      });
+
+      let path = [];
+      let currentNode = end;
+      while (currentNode) {
+        path.unshift(currentNode);
+        currentNode = prev[currentNode];
+      }
+
+      drawGraph(path);
+      animateTrain(path);
+      costDisplay.textContent = `Cost: ${dist[end]}`;
+    }
+
+    function floydWarshall() {
+      const dist = {};
+      const prev = {};
+
+      // Initialize the distance and previous nodes
+      graph.nodes.forEach(n => {
+        dist[n.id] = {};
+        prev[n.id] = {};
+        graph.nodes.forEach(m => {
+          dist[n.id][m.id] = Infinity;
+          prev[n.id][m.id] = null;
+        });
+        dist[n.id][n.id] = 0;
+      });
+
+      graph.edges.forEach(edge => {
+        dist[edge.source][edge.target] = edge.weight;
+        prev[edge.source][edge.target] = edge.source;
+      });
+
+      // Perform the Floyd-Warshall algorithm
+      graph.nodes.forEach(k => {
+        graph.nodes.forEach(i => {
+          graph.nodes.forEach(j => {
+            if (dist[i.id][j.id] > dist[i.id][k.id] + dist[k.id][j.id]) {
+              dist[i.id][j.id] = dist[i.id][k.id] + dist[k.id][j.id];
+              prev[i.id][j.id] = prev[k.id][j.id];
+            }
+          });
+        });
+      });
+
+      let path = [];
+      let currentNode = endSelect.value;
+      while (currentNode) {
+        path.unshift(currentNode);
+        currentNode = prev[startSelect.value][currentNode];
+      }
+
+      drawGraph(path);
+      animateTrain(path);
+      costDisplay.textContent = `Cost: ${dist[startSelect.value][endSelect.value]}`;
+    }
+
+    class PriorityQueue {
+      constructor() {
+        this.items = [];
+      }
+
+      enqueue(element, priority) {
+        this.items.push({ element, priority });
+        this.items.sort((a, b) => a.priority - b.priority);
+      }
+
+      dequeue() {
+        return this.items.shift();
+      }
+
+      isEmpty() {
+        return this.items.length === 0;
+      }
+    }
+function animateTrain(pathNodes) {
+  if (pathNodes.length < 2) return;
+
+  svg.selectAll(".negative-train").remove();
+
+  const trainGroup = svg.append("g")
+    .attr("class", "negative-train")
+    .attr("transform", `translate(${nodeById[pathNodes[0]].x}, ${nodeById[pathNodes[0]].y})`);
+
+  // Bullet train body (rounded rectangle)
+  trainGroup.append("rect")
+    .attr("x", -20)
+    .attr("y", -10)
+    .attr("width", 40)
+    .attr("height", 20)
+    .attr("rx", 10)
+    .attr("ry", 10)
+    .attr("fill", "#e0f2fe") // Light bluish
+    .attr("stroke", "#0f172a") // Dark outline
+    .attr("stroke-width", 1.5);
+
+  // Train window strip
+  trainGroup.append("rect")
+    .attr("x", -14)
+    .attr("y", -6)
+    .attr("width", 28)
+    .attr("height", 5)
+    .attr("fill", "#1e3a8a");
+
+  // Windows (optional - small)
+  for (let i = -10; i <= 10; i += 8) {
+    trainGroup.append("rect")
+      .attr("x", i)
+      .attr("y", -5)
+      .attr("width", 4)
+      .attr("height", 3)
+      .attr("fill", "#93c5fd");
+  }
+
+  // Nose cone (stylized front)
+  trainGroup.append("path")
+    .attr("d", "M20,-10 Q30,0 20,10")
+    .attr("fill", "#60a5fa");
+
+  // Wheels
+  trainGroup.append("circle")
+    .attr("cx", -12)
+    .attr("cy", 11)
+    .attr("r", 3)
+    .attr("fill", "#0f172a");
+
+  trainGroup.append("circle")
+    .attr("cx", 12)
+    .attr("cy", 11)
+    .attr("r", 3)
+    .attr("fill", "#0f172a");
+
+  let i = 0;
+
+  function moveNext() {
+    if (i >= pathNodes.length - 1) return;
+
+    const from = nodeById[pathNodes[i]];
+    const to = nodeById[pathNodes[i + 1]];
+    const edge = graph.edges.find(e => e.source === from.id && e.target === to.id);
+    if (!edge) return;
+
+    const duration = 1000;
+
+    trainGroup.transition()
+      .duration(duration)
+      .attr("transform", `translate(${to.x}, ${to.y})`)
+      .on("end", () => {
+        if (edge.weight < 0) {
+          // Reverse back
+          trainGroup.transition()
+            .duration(duration)
+            .attr("transform", `translate(${from.x}, ${from.y})`)
+            .on("end", () => {
+              // Continue forward again
+              trainGroup.transition()
+                .duration(duration)
+                .attr("transform", `translate(${to.x}, ${to.y})`)
+                .on("end", () => {
+                  i++;
+                  moveNext();
+                });
+            });
+        } else {
+          i++;
+          moveNext();
+        }
+      });
+  }
+
+  moveNext();
+}
+function animateTrainWithNegativeReturn(pathNodes) {
+  if (pathNodes.length < 2) return;
+
+  svg.selectAll(".negative-train").remove();
+
+  const trainGroup = svg.append("g")
+    .attr("class", "negative-train")
+    .attr("transform", `translate(${nodeById[pathNodes[0]].x}, ${nodeById[pathNodes[0]].y})`);
+
+  // Train body
+  trainGroup.append("rect").attr("x", -20).attr("y", -10).attr("width", 40).attr("height", 20).attr("rx", 10).attr("ry", 10).attr("fill", "#e0f2fe").attr("stroke", "#0f172a").attr("stroke-width", 1.5);
+  trainGroup.append("rect").attr("x", -14).attr("y", -6).attr("width", 28).attr("height", 5).attr("fill", "#1e3a8a");
+  for (let i = -10; i <= 10; i += 8) {
+    trainGroup.append("rect").attr("x", i).attr("y", -5).attr("width", 4).attr("height", 3).attr("fill", "#93c5fd");
+  }
+  trainGroup.append("path").attr("d", "M20,-10 Q30,0 20,10").attr("fill", "#60a5fa");
+  trainGroup.append("circle").attr("cx", -12).attr("cy", 11).attr("r", 3).attr("fill", "#0f172a");
+  trainGroup.append("circle").attr("cx", 12).attr("cy", 11).attr("r", 3).attr("fill", "#0f172a");
+
+  let i = 0;
+  let encounteredNegative = false;
+
+  function moveForward() {
+    if (i >= pathNodes.length - 1 || encounteredNegative) return;
+
+    const from = nodeById[pathNodes[i]];
+    const to = nodeById[pathNodes[i + 1]];
+    const edge = graph.edges.find(e => e.source === from.id && e.target === to.id);
+
+    const duration = 1000;
+
+    trainGroup.transition()
+      .duration(duration)
+      .attr("transform", `translate(${to.x}, ${to.y})`)
+      .on("end", () => {
+        if (edge.weight < 0) {
+          encounteredNegative = true;
+          moveBackward(i); // Start reversing from the current node index
+        } else {
+          i++;
+          moveForward();
+        }
+      });
+  }
+
+  function moveBackward(j) {
+    if (j <= 0) return; // Already back at the source
+
+    const from = nodeById[pathNodes[j]];
+    const to = nodeById[pathNodes[j - 1]];
+    const duration = 1000;
+
+    trainGroup.transition()
+      .duration(duration)
+      .attr("transform", `translate(${to.x}, ${to.y})`)
+      .on("end", () => {
+        moveBackward(j - 1); // Continue step-by-step backward
+      });
+  }
+
+  moveForward();
+}
+function prim(){
+  const nodes=graph.nodes.map(n=>n.id);
+  const selected=new Set();
+  const mstEdges=[];
+  
+  selected.add(nodes[0]);
+
+  while(selected.size<nodes.length){
+    const Edgecandidates=[];
+    graph.edges.forEach(edge=>{
+      if((selected.has(edge.source)&&!selected.has(edge.target))||
+    (selected.has(edge.target)&&!selected.has(edge.source))){
+      Edgecandidates.push(edge);
+    }
+    });
+    Edgecandidates.sort((a,b)=>a.weight-b.weight);
+    let edge;
+    do{
+      edge=Edgecandidates.shift();
+    }
+    while(
+      edge&&selected.has(edge.source)&&selected.has(edge.target)
+    );
+    if(edge){
+      mstEdges.push(edge);
+      selected.add(edge.source);
+      selected.add(edge.target);
+    }
+  }
+  drawGraph(mstEdges);
+  costDisplay.textContent="Prim's minimum spanning graph cost: "+mstEdges.reduce((sum,e)=>sum+e.weight,0);
+}
+
+function kruskal(){
+  const parent={};
+  graph.nodes.forEach(n=>parent[n.id]=n.id);
+
+  function find(u){
+    if(parent[u]!==u){
+      parent[u]=find(parent[u]);
+    }
+    return parent[u];
+  }
+  function union(u,v){
+    const rootU=find(u);
+    const rootV=find(v);
+    if(rootU!==rootV){
+      parent[rootV]=rootU;
+      return true;
+    }
+    return false;
+  }
+  const mstEdges=[];
+  const sortedEdges=[...graph.edges].sort((a,b)=>a.weight-b.weight);
+  sortedEdges.forEach(edge=>{
+    if(union(edge.source,edge.target)){
+      mstEdges.push(edge);
+    }
+  });
+  drawGraph(mstEdges);
+  const totalCost=mstEdges.reduce((sum,e)=>sum+e.weight,0);
+  costDisplay.textContent=`Krushkal's minimum spanning graph cost:${totalCost}`;
+}
+    // Add event listener for running the algorithm
+    runBtn.addEventListener("click", () => {
+      const start = startSelect.value;
+      const end = endSelect.value;
+      const algorithm = algorithmSelect.value;
+
+      costDisplay.textContent = "";
+
+      switch (algorithm) {
+        case "Dijkstra":
+          dijkstra(start, end);
+          break;
+        case "Bellman-Ford":
+          bellmanFord(start, end);
+          break;
+        case "Floyd-Warshall":
+          floydWarshall();
+          break;
+        case "Prim":
+         prim();
+          break;
+        case "Kruskal":
+          kruskal();
+          break;
+      }
+    });
+    // Go Back button
+    backBtn.addEventListener("click", () => {
+      window.history.back();
+    });
+    // Initial population of dropdowns and graph rendering
+    populateDropdowns();
+    drawGraph();
+  </script>
+</body>
+</html>
